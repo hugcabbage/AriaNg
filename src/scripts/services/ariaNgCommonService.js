@@ -168,6 +168,123 @@
 
                 return result;
             },
+            parseSpecialLinksFromOriginInput: function (s) {
+                if (!s) {
+                    return [];
+                }
+
+                var lines = s.split('\n');
+                var blocks = [];
+                var currentBlock = null;
+
+                var isIndented = function (line) {
+                    return /^[ \t]+/.test(line);
+                };
+
+                var parseOptionLine = function (line) {
+                    var key = null;
+                    var value = '';
+
+                    var equalIndex = line.indexOf('=');
+
+                    if (equalIndex >= 0) {
+                        key = line.substring(0, equalIndex).trim();
+                        value = line.substring(equalIndex + 1).trim();
+                    } else {
+                        var spaceIndex = line.search(/[ \t]/);
+
+                        if (spaceIndex > 0) {
+                            key = line.substring(0, spaceIndex).trim();
+                            value = line.substring(spaceIndex + 1).trim();
+                        } else {
+                            key = line.trim();
+                        }
+                    }
+
+                    return key ? { key: key, value: value } : null;
+                };
+
+                var isUriLine = function (line) {
+                    return /^(https?|ftps?|sftp):\/\//i.test(line) || /^magnet:\?/i.test(line);
+                };
+
+                for (var i = 0; i < lines.length; i++) {
+                    var rawLine = lines[i];
+                    var line = rawLine.trim();
+
+                    if (!line || line.charAt(0) === '#') {
+                        continue;
+                    }
+
+                    if (!isIndented(rawLine)) {
+                        var url = line;
+                        var block = {
+                            urls: [url],
+                            options: {}
+                        };
+
+                        var dollarIndex = line.indexOf('$');
+
+                        if (dollarIndex > 0 && dollarIndex < line.length - 1 && !isUriLine(line)) {
+                            var outputFile = line.substring(0, dollarIndex).trim();
+                            url = line.substring(dollarIndex + 1).trim();
+
+                            if (outputFile && url) {
+                                block.urls = [url];
+                                block.options['out'] = outputFile;
+                            }
+                        }
+
+                        currentBlock = block;
+                        blocks.push(currentBlock);
+                    } else {
+                        if (!currentBlock) {
+                            continue;
+                        }
+
+                        var option = parseOptionLine(line);
+
+                        if (option) {
+                            currentBlock.options[option.key] = option.value;
+                        }
+                    }
+                }
+
+                return blocks;
+            },
+            formatSpecialLinksToInputFile: function (blocks) {
+                if (!angular.isArray(blocks)) {
+                    return '';
+                }
+
+                var result = [];
+
+                for (var i = 0; i < blocks.length; i++) {
+                    var block = blocks[i];
+
+                    if (!block.urls || block.urls.length < 1) {
+                        continue;
+                    }
+
+                    result.push(block.urls[0]);
+
+                    for (var key in block.options) {
+                        if (block.options.hasOwnProperty(key)) {
+                            var optionValue = block.options[key];
+
+                            if (optionValue) {
+                                result.push('  ' + key + '=' + optionValue);
+                            } else {
+                                result.push('  ' + key);
+                            }
+                        }
+                    }
+
+                    result.push('');
+                }
+
+                return result.join('\n');
+            },
             decodePercentEncodedString: function (s) {
                 if (!s) {
                     return s;
