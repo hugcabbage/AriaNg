@@ -76,21 +76,34 @@
     margin-bottom: 0;
 }
 
-.task-table .task-last-time, .task-table .task-seeders, .task-table .task-last-time + .task-download-speed {
+.task-table .task-last-time, .task-table .task-seeders, .task-table .task-download-speed, .task-table .task-upload-speed {
     color: #888;
     font-size: 12px;
 }
 
-.task-table .task-seeders, .task-table .task-last-time + .task-download-speed {
+.task-table .task-seeders, .task-table .task-upload-speed, .task-table .task-download-speed {
     margin-top: 1px;
 }
 
-.task-table .task-last-time + .task-download-speed {
-    padding-left: 20px;
+.task-table .task-seeders {
+    margin-right: 8px;
 }
 
-.task-table .task-download-speed, .task-table .task-peer-download-speed {
+.task-table .task-download-speed, .task-table .task-peer-download-speed, .task-table .task-upload-speed {
     font-size: 12px;
+}
+
+.task-table .task-speed-icon {
+    display: inline-block;
+}
+
+.task-table .task-download-speed .fa, .task-table .task-upload-speed .fa {
+    font-size: 12px;
+    vertical-align: baseline;
+}
+
+.task-table .task-upload-speed {
+    margin-left: 6px;
 }
 
 .task-table .checkbox, .task-table .radio {
