@@ -148,27 +148,7 @@
 
                 return filePath.substring(filePath.lastIndexOf('.'));
             },
-            parseUrlsFromOriginInput: function (s) {
-                if (!s) {
-                    return [];
-                }
-
-                var lines = s.split('\n');
-                var result = [];
-
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i];
-
-                    if (line.match(/^(http|https|ftp|sftp):\/\/.+$/)) {
-                        result.push(line);
-                    } else if (line.match(/^magnet:\?.+$/)) {
-                        result.push(line);
-                    }
-                }
-
-                return result;
-            },
-            parseSpecialLinksFromOriginInput: function (s) {
+            parseDownloadLinksFromOriginInput: function (s) {
                 if (!s) {
                     return [];
                 }
@@ -204,8 +184,9 @@
                     return key ? { key: key, value: value } : null;
                 };
 
-                var isUriLine = function (line) {
-                    return /^(https?|ftps?|sftp):\/\//i.test(line) || /^magnet:\?/i.test(line);
+                var getUriIndex = function (line) {
+                    var uriMatch = line.match(/(https?|ftps?|sftp):\/\//i);
+                    return uriMatch ? uriMatch.index : -1;
                 };
 
                 for (var i = 0; i < lines.length; i++) {
@@ -223,9 +204,10 @@
                             options: {}
                         };
 
-                        var dollarIndex = line.indexOf('$');
+                        var uriIndex = getUriIndex(line);
+                        var dollarIndex = uriIndex > 0 ? line.lastIndexOf('$', uriIndex - 1) : -1;
 
-                        if (dollarIndex > 0 && dollarIndex < line.length - 1 && !isUriLine(line)) {
+                        if (dollarIndex > 0 && dollarIndex < line.length - 1) {
                             var outputFile = line.substring(0, dollarIndex).trim();
                             url = line.substring(dollarIndex + 1).trim();
 
@@ -251,39 +233,6 @@
                 }
 
                 return blocks;
-            },
-            formatSpecialLinksToInputFile: function (blocks) {
-                if (!angular.isArray(blocks)) {
-                    return '';
-                }
-
-                var result = [];
-
-                for (var i = 0; i < blocks.length; i++) {
-                    var block = blocks[i];
-
-                    if (!block.urls || block.urls.length < 1) {
-                        continue;
-                    }
-
-                    result.push(block.urls[0]);
-
-                    for (var key in block.options) {
-                        if (block.options.hasOwnProperty(key)) {
-                            var optionValue = block.options[key];
-
-                            if (optionValue) {
-                                result.push('  ' + key + '=' + optionValue);
-                            } else {
-                                result.push('  ' + key);
-                            }
-                        }
-                    }
-
-                    result.push('');
-                }
-
-                return result.join('\n');
             },
             decodePercentEncodedString: function (s) {
                 if (!s) {

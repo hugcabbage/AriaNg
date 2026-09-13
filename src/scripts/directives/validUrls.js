@@ -13,8 +13,8 @@
                         return;
                     }
 
-                    var urls = ariaNgCommonService.parseUrlsFromOriginInput(value);
-                    var valid = urls && urls.length > 0;
+                    var blocks = ariaNgCommonService.parseDownloadLinksFromOriginInput(value);
+                    var valid = blocks && blocks.length > 0;
 
                     ngModel.$setValidity(DIRECTIVE_ID, valid);
                 };
