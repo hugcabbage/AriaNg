@@ -8,10 +8,6 @@
                 show: true
             },
             {
-                name: 'special-links',
-                show: true
-            },
-            {
                 name: 'options',
                 show: true
             }
@@ -48,29 +44,7 @@
         };
 
         var getDownloadTasksByLinks = function (options) {
-            var urls = ariaNgCommonService.parseUrlsFromOriginInput($scope.context.urls);
-            var tasks = [];
-
-            if (!options) {
-                options = angular.copy($scope.context.options);
-            }
-
-            for (var i = 0; i < urls.length; i++) {
-                if (urls[i] === '' || urls[i].trim() === '') {
-                    continue;
-                }
-
-                tasks.push({
-                    urls: [urls[i].trim()],
-                    options: options
-                });
-            }
-
-            return tasks;
-        };
-
-        var getDownloadTasksBySpecialLinks = function (options) {
-            var blocks = ariaNgCommonService.parseSpecialLinksFromOriginInput($scope.context.specialUrls);
+            var blocks = ariaNgCommonService.parseDownloadLinksFromOriginInput($scope.context.urls);
             var tasks = [];
 
             if (!options) {
@@ -99,10 +73,9 @@
             return tasks;
         };
 
-        var downloadByLinksAndSpecialLinks = function (pauseOnAdded, responseCallback) {
+        var downloadByLinks = function (pauseOnAdded, responseCallback) {
             var options = angular.copy($scope.context.options);
             var tasks = getDownloadTasksByLinks(options);
-            tasks = tasks.concat(getDownloadTasksBySpecialLinks(options));
 
             saveDownloadPath(options);
 
@@ -137,7 +110,6 @@
             currentTab: 'links',
             taskType: 'urls',
             urls: '',
-            specialUrls: '',
             uploadFile: null,
             availableOptions: (function () {
                 var keys = aria2SettingService.getNewTaskOptionKeys();
@@ -167,12 +139,6 @@
         $scope.changeTab = function (tabName) {
             if (tabName === 'options') {
                 $scope.loadDefaultOption();
-            } else if (tabName === 'links') {
-                if ($scope.context.taskType === 'special-links') {
-                    $scope.context.taskType = 'urls';
-                }
-            } else if (tabName === 'special-links') {
-                $scope.context.taskType = 'special-links';
             }
 
             $scope.context.currentTab = tabName;
@@ -242,6 +208,20 @@
             }, angular.element('#file-holder'));
         };
 
+        $scope.openInputFile = function () {
+            ariaNgFileService.openFileContent({
+                scope: $scope,
+                fileFilter: null,
+                fileType: 'text'
+            }, function (result) {
+                $scope.context.urls = result.content;
+                $scope.context.taskType = 'urls';
+                $scope.changeTab('links');
+            }, function (error) {
+                ariaNgCommonService.showError(error);
+            }, angular.element('#file-holder'));
+        };
+
         $scope.isNewTaskValid = function () {
             if (!$scope.context.uploadFile) {
                 return $scope.newTaskForm.$valid;
@@ -275,8 +255,8 @@
                 }
             };
 
-            if ($scope.context.taskType === 'urls' || $scope.context.taskType === 'special-links') {
-                $rootScope.loadPromise = downloadByLinksAndSpecialLinks(pauseOnAdded, responseCallback);
+            if ($scope.context.taskType === 'urls') {
+                $rootScope.loadPromise = downloadByLinks(pauseOnAdded, responseCallback);
             } else if ($scope.context.taskType === 'torrent') {
                 $rootScope.loadPromise = downloadByTorrent(pauseOnAdded, responseCallback);
             } else if ($scope.context.taskType === 'metalink') {
@@ -286,7 +266,6 @@
 
         $scope.showExportCommandAPIModal = function () {
             var tasks = getDownloadTasksByLinks();
-            tasks = tasks.concat(getDownloadTasksBySpecialLinks());
 
             $scope.context.exportCommandApiOptions = {
                 type: 'new-task',
@@ -321,12 +300,7 @@
         };
 
         $scope.getValidUrlsCount = function () {
-            var urls = ariaNgCommonService.parseUrlsFromOriginInput($scope.context.urls);
-            return urls ? urls.length : 0;
-        };
-
-        $scope.getValidSpecialLinksCount = function () {
-            var blocks = ariaNgCommonService.parseSpecialLinksFromOriginInput($scope.context.specialUrls);
+            var blocks = ariaNgCommonService.parseDownloadLinksFromOriginInput($scope.context.urls);
             return blocks ? blocks.length : 0;
         };
 

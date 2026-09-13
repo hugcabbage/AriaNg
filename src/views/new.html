@@ -5,9 +5,6 @@
                 <li ng-class="{'active': context.currentTab === 'links'}">
                     <a class="pointer-cursor" ng-click="changeTab('links')" ng-bind="(context.taskType === 'torrent' ? 'Torrent File' : (context.taskType === 'metalink' ? 'Metalink File' : 'Links') | translate)">Links</a>
                 </li>
-                <li ng-class="{'active': context.currentTab === 'special-links'}">
-                    <a class="pointer-cursor" ng-click="changeTab('special-links')" translate>Special Links</a>
-                </li>
                 <li ng-class="{'active': context.currentTab === 'options'}">
                     <a class="pointer-cursor" ng-click="changeTab('options')" translate>Options</a>
                 </li>
@@ -20,6 +17,7 @@
                         <ul class="dropdown-menu right-align">
                             <li><a class="pointer-cursor" ng-click="openTorrent()" translate>Open Torrent File</a></li>
                             <li><a class="pointer-cursor" ng-click="openMetalink()" translate>Open Metalink File</a></li>
+                            <li><a class="pointer-cursor" ng-click="openInputFile()" translate>Open Input File</a></li>
                         </ul>
                     </div><div class="btn-group">
                         <button type="submit" class="btn btn-sm"
@@ -33,8 +31,8 @@
                         </button>
                         <ul class="dropdown-menu right-align">
                             <li><a class="pointer-cursor" ng-click="startDownload(true)" translate>Download Later</a></li>
-                            <li ng-if="context.taskType === 'urls' || context.taskType === 'special-links'" class="divider"></li>
-                            <li ng-if="context.taskType === 'urls' || context.taskType === 'special-links'"><a class="pointer-cursor" ng-click="showExportCommandAPIModal()" translate>Export Command API</a></li>
+                            <li ng-if="context.taskType === 'urls'" class="divider"></li>
+                            <li ng-if="context.taskType === 'urls'"><a class="pointer-cursor" ng-click="showExportCommandAPIModal()" translate>Export Command API</a></li>
                         </ul>
                     </div>
                 </li>
@@ -48,8 +46,8 @@
                                 <p ng-bind="'format.task.new.download-links' | translate: {count: getValidUrlsCount()}">Download Links:</p>
                                 <div class="form-group has-feedback no-margin" ng-class="{ 'has-error' : newTaskForm.urls.$invalid && newTaskForm.urls.$dirty, 'has-success' : newTaskForm.urls.$valid && newTaskForm.urls.$dirty }">
                                     <textarea name="urls" class="form-control" rows="10" autofocus="autofocus" ng-auto-focus ng-valid-urls
-                                              ng-model="context.urls" ng-required="context.specialUrls === ''" ng-keydown="urlTextboxKeyDown($event)"
-                                              ng-placeholder="'Support multiple URLs, one URL per line.' | translate"></textarea>
+                                              ng-model="context.urls" ng-required="true" ng-keydown="urlTextboxKeyDown($event)"
+                                              ng-placeholder="'Support aria2 input file format. One download per URL line, options on indented lines. Use &quot;filename$URL&quot; to specify the output file name.' | translate"></textarea>
                                     <div class="form-control-icon" ng-if="newTaskForm.urls.$dirty">
                                         <i class="fa form-control-feedback" ng-class="{'fa-check':newTaskForm.urls.$valid, 'fa-times':newTaskForm.urls.$invalid}"></i>
                                     </div>
@@ -66,23 +64,6 @@
                         </div>
                     </div>
                     <input id="file-holder" type="file" style="display: none"/>
-                </div>
-                <div class="tab-pane" ng-class="{'active': context.currentTab === 'special-links'}">
-                    <div class="new-task-table">
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <p ng-bind="'format.task.new.special-download-links' | translate: {count: getValidSpecialLinksCount()}">Special Links:</p>
-                                <div class="form-group has-feedback no-margin" ng-class="{ 'has-error' : newTaskForm.specialUrls.$invalid && newTaskForm.specialUrls.$dirty, 'has-success' : newTaskForm.specialUrls.$valid && newTaskForm.specialUrls.$dirty }">
-                                    <textarea name="specialUrls" class="form-control" rows="10" ng-auto-focus ng-valid-special-urls
-                                              ng-model="context.specialUrls" ng-required="context.urls === ''" ng-keydown="urlTextboxKeyDown($event)"
-                                              ng-placeholder="'Support aria2 input file format. One download per URL line, options on indented lines. Use &quot;filename$URL&quot; to specify the output file name.' | translate"></textarea>
-                                    <div class="form-control-icon" ng-if="newTaskForm.specialUrls.$dirty">
-                                        <i class="fa form-control-feedback" ng-class="{'fa-check':newTaskForm.specialUrls.$valid, 'fa-times':newTaskForm.specialUrls.$invalid}"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="tab-pane" ng-class="{'active': context.currentTab === 'options'}">
                     <div class="settings-table striped hoverable">
